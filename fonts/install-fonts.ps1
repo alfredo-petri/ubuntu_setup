@@ -3,13 +3,9 @@
 # Rode este script em um PowerShell como Administrador.
 
 $ErrorActionPreference = "Stop"
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
 
-$fonts = @(
-  "MesloLGS%20NF%20Regular.ttf",
-  "MesloLGS%20NF%20Bold.ttf",
-  "MesloLGS%20NF%20Italic.ttf",
-  "MesloLGS%20NF%20Bold%20Italic.ttf"
-)
+$names = @("Regular", "Bold", "Italic", "Bold Italic")
 $base = "https://github.com/romkatv/powerlevel10k-media/raw/master"
 $tmp = Join-Path $env:TEMP "MesloLGS-NF"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
@@ -17,14 +13,16 @@ New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 $shell = New-Object -ComObject Shell.Application
 $fontsFolder = $shell.Namespace(0x14) # CSIDL_FONTS
 
-foreach ($f in $fonts) {
-    $dest = Join-Path $tmp $f
-    Write-Host "Baixando $f..."
-    Invoke-WebRequest "$base/$f" -OutFile $dest
-    Write-Host "Instalando $f..."
+foreach ($name in $names) {
+    $fileName = "MesloLGS NF $name.ttf"
+    $urlName = [uri]::EscapeDataString($fileName)
+    $dest = Join-Path $tmp $fileName
+    Write-Host "Baixando $fileName..."
+    Invoke-WebRequest "$base/$urlName" -OutFile $dest
+    Write-Host "Instalando $fileName..."
     $fontsFolder.CopyHere($dest, 0x10)
 }
 
 Write-Host ""
 Write-Host "Fonte MesloLGS NF instalada. Selecione 'MesloLGS NF' nas"
-Write-Host "preferências de fonte do Windows Terminal (ou outro emulador)."
+Write-Host "preferencias de fonte do Windows Terminal (ou outro emulador)."
