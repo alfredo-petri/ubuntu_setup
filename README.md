@@ -47,21 +47,29 @@ ativos (o `lazy-lock.json` bate 100% com os plugins declarados no
 
 ## Uso
 
-Na máquina onde o shell vai rodar (servidor SSH, ou local — este
-repositório trata as duas situações da mesma forma):
+Um comando só configura a máquina inteira:
 
 ```bash
-./install.sh           # instala tudo
+./install.sh
+```
+
+Qualquer decisão que precise de input (identidade do git, se instala a
+fonte no Windows a partir do WSL2) é perguntada ali mesmo, no
+terminal — não precisa editar nada nem passar flag nenhuma. Rode num
+terminal de verdade (não em automação/CI), já que `--git` e `--fonts`
+fazem perguntas interativas.
+
+Se quiser rodar só uma parte específica:
+
+```bash
 ./install.sh --zsh      # só zsh/oh-my-zsh/powerlevel10k/plugins
 ./install.sh --nvim     # só neovim + config
 ./install.sh --node     # só nvm + node LTS
 ./install.sh --git      # só git + identidade (interativo)
 ./install.sh --gh       # só GitHub CLI
 ./install.sh --tools    # só htop/ffmpeg/fastfetch/tldr/nodemon
+./install.sh --fonts    # só a fonte MesloLGS NF
 ```
-
-`--git` faz perguntas interativas (nome/email para os commits) — rode
-num terminal de verdade, não em automação.
 
 Depois:
 
@@ -70,18 +78,20 @@ exec zsh
 p10k configure
 ```
 
-### Fonte MesloLGS NF (máquina local, de onde você acessa o terminal)
+### Fonte MesloLGS NF
 
-Só necessária se você acessa este ambiente via SSH a partir de outra
-máquina (ou se este é o ambiente onde seu terminal roda visualmente).
+`./install.sh` (ou `./install.sh --fonts`) detecta sozinho onde
+instalar:
 
-```bash
-fonts/install-fonts.sh          # Linux
-```
-
-```powershell
-fonts\install-fonts.ps1         # Windows, como Administrador
-```
+- **WSL2** (com `powershell.exe` acessível): instala automaticamente
+  no Windows via `fonts/install-fonts.ps1`, invocado por interop —
+  não precisa abrir PowerShell manualmente. Pergunta confirmação antes
+  (`[S/n]`, padrão sim).
+- **Linux com sessão gráfica local**: roda `fonts/install-fonts.sh`
+  direto, sem perguntar nada.
+- **Outros casos** (ex.: SSH a partir de outra máquina sem
+  `powershell.exe` visível): não dá pra automatizar daqui — mostra as
+  instruções pra rodar manualmente na máquina local.
 
 Depois selecione **MesloLGS NF** nas preferências do emulador de
 terminal (GNOME Terminal, Windows Terminal, iTerm2 etc — veja a

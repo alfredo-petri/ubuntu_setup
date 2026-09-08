@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Instalador principal: zsh + oh-my-zsh + powerlevel10k + plugins + nvim
-# + node + git + gh cli + utilitários de terminal.
+# Instalador principal — um comando só faz o setup completo:
+# zsh + oh-my-zsh + powerlevel10k + plugins + nvim + node + git + gh
+# cli + utilitários de terminal + fonte MesloLGS NF (detecta sozinho
+# se precisa instalar no Windows via WSL2 ou localmente no Linux).
+#
+# Qualquer decisão que precise de input (identidade do git, se instala
+# a fonte no Windows) é perguntada aqui mesmo, via terminal interativo
+# — sem precisar de flags nem de outra ferramenta pra configurar.
 #
 # oh-my-zsh, powerlevel10k, zsh-autosuggestions, zsh-syntax-highlighting,
 # zsh-completions, a fonte MesloLGS NF e o NVM são clonados/baixados
@@ -20,19 +26,22 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<EOF
-Uso: $0 [--zsh] [--nvim] [--node] [--git] [--gh] [--tools] [--all]
+Uso: $0 [--zsh] [--nvim] [--node] [--git] [--gh] [--tools] [--fonts] [--all]
 
-  --zsh    Instala apenas zsh/oh-my-zsh/powerlevel10k/plugins
-  --nvim   Instala apenas neovim + config
-  --node   Instala apenas nvm + node LTS (necessário para o LSP vtsls)
-  --git    Instala git e configura identidade global (interativo)
-  --gh     Instala o GitHub CLI (gh)
-  --tools  Instala htop, ffmpeg, fastfetch, tldr, nodemon
-  --all    Instala tudo (padrão se nenhuma flag for passada)
+Sem nenhuma flag, roda TUDO (equivalente a --all) — é o uso normal,
+um comando só configura a máquina inteira:
 
-Fontes (MesloLGS NF) não entram aqui — rode fonts/install-fonts.sh
-(Linux) ou fonts/install-fonts.ps1 (Windows) na MÁQUINA LOCAL de onde
-você acessa o terminal.
+  ./install.sh
+
+Flags individuais, se quiser rodar só uma parte:
+  --zsh    zsh/oh-my-zsh/powerlevel10k/plugins
+  --nvim   neovim + config
+  --node   nvm + node LTS (necessário para o LSP vtsls)
+  --git    git + identidade global (pergunta nome/email se não tiver)
+  --gh     GitHub CLI (gh)
+  --tools  htop, ffmpeg, fastfetch, tldr, nodemon
+  --fonts  fonte MesloLGS NF (detecta Windows/WSL2 vs Linux sozinho)
+  --all    tudo (padrão se nenhuma flag for passada)
 EOF
 }
 
@@ -42,14 +51,11 @@ DO_NODE=false
 DO_GIT=false
 DO_GH=false
 DO_TOOLS=false
+DO_FONTS=false
 
 if [[ $# -eq 0 ]]; then
-  DO_ZSH=true
-  DO_NVIM=true
-  DO_NODE=true
-  DO_GIT=true
-  DO_GH=true
-  DO_TOOLS=true
+  DO_ZSH=true; DO_NVIM=true; DO_NODE=true
+  DO_GIT=true; DO_GH=true; DO_TOOLS=true; DO_FONTS=true
 fi
 
 while [[ $# -gt 0 ]]; do
@@ -60,7 +66,8 @@ while [[ $# -gt 0 ]]; do
     --git) DO_GIT=true ;;
     --gh) DO_GH=true ;;
     --tools) DO_TOOLS=true ;;
-    --all) DO_ZSH=true; DO_NVIM=true; DO_NODE=true; DO_GIT=true; DO_GH=true; DO_TOOLS=true ;;
+    --fonts) DO_FONTS=true ;;
+    --all) DO_ZSH=true; DO_NVIM=true; DO_NODE=true; DO_GIT=true; DO_GH=true; DO_TOOLS=true; DO_FONTS=true ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Opção desconhecida: $1"; usage; exit 1 ;;
   esac
@@ -93,6 +100,10 @@ if $DO_TOOLS; then
   "$REPO_ROOT/scripts/07-tools.sh"
 fi
 
+if $DO_FONTS; then
+  "$REPO_ROOT/scripts/08-fonts.sh"
+fi
+
 cat <<'EOF'
 
 ==> Instalação concluída.
@@ -103,7 +114,6 @@ Próximos passos:
   3. Dentro do nvim, `:Mason` e instale o `vtsls` (tecla `i` em cima
      dele) — precisa do node/npm, instalado pelo script 04-node.sh.
   4. `gh auth login` para autenticar o GitHub CLI.
-  5. Se ainda não instalou a fonte MesloLGS NF na máquina local,
-     rode fonts/install-fonts.sh (Linux) ou fonts/install-fonts.ps1
-     (Windows) por lá.
+  5. Selecione "MesloLGS NF" nas preferências do seu emulador de
+     terminal, se ainda não fez isso.
 EOF
